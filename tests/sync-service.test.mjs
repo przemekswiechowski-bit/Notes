@@ -182,43 +182,20 @@ describe("sync service scaffold", () => {
     assert.deepEqual(repository.getReplacedWith(), [remoteNote]);
   });
 
-  it("reports conflict when both local and remote contain different data", async () => {
-    const localNote = createNote({ id: "same-id", title: "Local", body: "local body" });
-    const remoteNote = createNote({ id: "same-id", title: "Remote", body: "remote body" });
-    const repository = createRepository([localNote]);
+  it("merges local A+C with remote A+B into A+B+C", async () => {
+    const shared = createNote({ id: "shared", title: "A", body: "shared" });
+    const localOnly = createNote({ id: "local-only", title: "C", body: "local only" });
+    const remoteOnly = createNote({ id: "remote-only", title: "B", body: "remote only" });
+    const repository = createRepository([shared, localOnly]);
     const fetchImpl = async (url) => {
       if (String(url).includes("/drive/v3/files?")) {
         return jsonResponse({ files: [{ id: "remote-file-3", name: "notes-sync.json" }] });
       }
       if (String(url).includes("/drive/v3/files/remote-file-3?alt=media")) {
-        return jsonResponse({ app: "Notes", version: 1, notes: [remoteNote] });
+        return jsonResponse({ app: "Notes", version: 1, notes: [shared, remoteOnly] });
       }
-      throw new Error(`Unexpected request: ${url}`);
-    };
-    const sync = new SyncService(() => {}, {
-      repository,
-      googleAuth: new FakeGoogleAuth(),
-      fetchImpl,
-    });
-
-    const result = await sync.syncNow();
-
-    assert.equal(result.ok, false);
-    assert.equal(result.syncStatus, "conflict");
-    assert.match(result.syncLabel, /konflikt/i);
-    assert.match(result.message, /Konflikt/i);
-    assert.deepEqual(repository.getNotes(), [localNote]);
-  });
-
-  it("treats identical local and remote payloads as already synchronized", async () => {
-    const note = createNote({ title: "Same", body: "same body" });
-    const repository = createRepository([note]);
-    const fetchImpl = async (url) => {
-      if (String(url).includes("/drive/v3/files?")) {
-        return jsonResponse({ files: [{ id: "remote-file-4", name: "notes-sync.json" }] });
-      }
-      if (String(url).includes("/drive/v3/files/remote-file-4?alt=media")) {
-        return jsonResponse({ app: "Notes", version: 1, notes: [note] });
+      if (String(url).includes("upload/drive/v3/files/remote-file-3?uploadType=multipart")) {
+        return jsonResponse({ id: "remote-file-3" });
       }
       throw new Error(`Unexpected request: ${url}`);
     };
@@ -232,6 +209,170 @@ describe("sync service scaffold", () => {
 
     assert.equal(result.ok, true);
     assert.equal(result.syncStatus, "saved");
-    assert.match(result.message, /już zgodne/i);
+    assert.equal(repository.getNotes().length, 3);
+    assert.deepEqual(
+      repository.getNotes().map((note) => note.id).sort(),
+      ["local-only", "remote-only", "shared"],
+    );
+    assert.match(result.message, /scalono/i);
+  });
+
+  it("prefers the newer version when updatedAt differs", async () => {
+    const localOlder = createNote({
+      id: "same-id",
+      title: "Older local",
+      body: "older",
+      createdAt: "2026-05-18T10:00:00.000Z",
+      updatedAt: "2026-05-18T10:05:00.000Z",
+    });
+    const remoteNewer = createNote({
+      id: "same-id",
+      title: "Newer remote",
+      body: "newer",
+      createdAt: "2026-05-18T10:00:00.000Z",
+      updatedAt: "2026-05-18T10:10:00.000Z",
+    });
+    const repository = createRepository([localOlder]);
+    const fetchImpl = async (url) => {
+      if (String(url).includes("/drive/v3/files?")) {
+        return jsonResponse({ files: [{ id: "remote-file-4", name: "notes-sync.json" }] });
+      }
+      if (String(url).includes("/drive/v3/files/remote-file-4?alt=media")) {
+        return jsonResponse({ app: "Notes", version: 1, notes: [remoteNewer] });
+      }
+      if (String(url).includes("upload/drive/v3/files/remote-file-4?uploadType=multipart")) {
+        return jsonResponse({ id: "remote-file-4" });
+      }
+      throw new Error(`Unexpected request: ${url}`);
+    };
+    const sync = new SyncService(() => {}, {
+      repository,
+      googleAuth: new FakeGoogleAuth(),
+      fetchImpl,
+    });
+
+    const result = await sync.syncNow();
+
+    assert.equal(result.ok, true);
+    assert.equal(result.syncStatus, "saved");
+    assert.equal(repository.getNotes()[0].title, "Newer remote");
+  });
+
+  it("creates a conflict copy when updatedAt matches but content differs", async () => {
+    const localNote = createNote({
+      id: "same-id",
+      title: "Local title",
+      body: "local body",
+      createdAt: "2026-05-18T10:00:00.000Z",
+      updatedAt: "2026-05-18T10:10:00.000Z",
+    });
+    const remoteNote = createNote({
+      id: "same-id",
+      title: "Remote title",
+      body: "remote body",
+      createdAt: "2026-05-18T10:00:00.000Z",
+      updatedAt: "2026-05-18T10:10:00.000Z",
+    });
+    const repository = createRepository([localNote]);
+    const fetchImpl = async (url) => {
+      if (String(url).includes("/drive/v3/files?")) {
+        return jsonResponse({ files: [{ id: "remote-file-5", name: "notes-sync.json" }] });
+      }
+      if (String(url).includes("/drive/v3/files/remote-file-5?alt=media")) {
+        return jsonResponse({ app: "Notes", version: 1, notes: [remoteNote] });
+      }
+      if (String(url).includes("upload/drive/v3/files/remote-file-5?uploadType=multipart")) {
+        return jsonResponse({ id: "remote-file-5" });
+      }
+      throw new Error(`Unexpected request: ${url}`);
+    };
+    const sync = new SyncService(() => {}, {
+      repository,
+      googleAuth: new FakeGoogleAuth(),
+      fetchImpl,
+    });
+
+    const result = await sync.syncNow();
+
+    assert.equal(result.ok, true);
+    assert.equal(repository.getNotes().length, 2);
+    const conflictCopy = repository.getNotes().find((note) => note.id !== "same-id");
+    assert.ok(conflictCopy);
+    assert.match(conflictCopy.title, /\(konflikt\)/i);
+    assert.equal(repository.getNotes().find((note) => note.id === "same-id").title, "Local title");
+  });
+
+  it("lets newer deletion win over older active note", async () => {
+    const localActive = createNote({
+      id: "same-id",
+      title: "Active local",
+      body: "still here",
+      createdAt: "2026-05-18T10:00:00.000Z",
+      updatedAt: "2026-05-18T10:05:00.000Z",
+      deleted: false,
+    });
+    const remoteDeleted = createNote({
+      id: "same-id",
+      title: "Deleted remote",
+      body: "gone",
+      createdAt: "2026-05-18T10:00:00.000Z",
+      updatedAt: "2026-05-18T10:12:00.000Z",
+      deleted: true,
+      deletedAt: "2026-05-18T10:12:00.000Z",
+    });
+    const repository = createRepository([localActive]);
+    const fetchImpl = async (url) => {
+      if (String(url).includes("/drive/v3/files?")) {
+        return jsonResponse({ files: [{ id: "remote-file-6", name: "notes-sync.json" }] });
+      }
+      if (String(url).includes("/drive/v3/files/remote-file-6?alt=media")) {
+        return jsonResponse({ app: "Notes", version: 1, notes: [remoteDeleted] });
+      }
+      if (String(url).includes("upload/drive/v3/files/remote-file-6?uploadType=multipart")) {
+        return jsonResponse({ id: "remote-file-6" });
+      }
+      throw new Error(`Unexpected request: ${url}`);
+    };
+    const sync = new SyncService(() => {}, {
+      repository,
+      googleAuth: new FakeGoogleAuth(),
+      fetchImpl,
+    });
+
+    const result = await sync.syncNow();
+
+    assert.equal(result.ok, true);
+    assert.equal(repository.getNotes()[0].deleted, true);
+    assert.equal(repository.getNotes()[0].deletedAt, "2026-05-18T10:12:00.000Z");
+  });
+
+  it("keeps local notes and uploads them when remote is empty", async () => {
+    const note = createNote({ title: "Local only", body: "persist me" });
+    const repository = createRepository([note]);
+    const requests = [];
+    const fetchImpl = async (url, options = {}) => {
+      requests.push({ url, options });
+      if (String(url).includes("/drive/v3/files?")) {
+        return jsonResponse({ files: [{ id: "remote-file-7", name: "notes-sync.json" }] });
+      }
+      if (String(url).includes("/drive/v3/files/remote-file-7?alt=media")) {
+        return jsonResponse({ app: "Notes", version: 1, notes: [] });
+      }
+      if (String(url).includes("upload/drive/v3/files/remote-file-7?uploadType=multipart")) {
+        return jsonResponse({ id: "remote-file-7" });
+      }
+      throw new Error(`Unexpected request: ${url}`);
+    };
+    const sync = new SyncService(() => {}, {
+      repository,
+      googleAuth: new FakeGoogleAuth(),
+      fetchImpl,
+    });
+
+    const result = await sync.syncNow();
+
+    assert.equal(result.ok, true);
+    assert.equal(result.syncStatus, "saved");
+    assert.match(String(requests.at(-1).options.body), /Local only/);
   });
 });

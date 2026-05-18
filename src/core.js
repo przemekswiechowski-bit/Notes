@@ -351,3 +351,101 @@ export function mergeImportedNotes(localNotes, importedNotes) {
 function hasContentConflict(a, b) {
   return a.title !== b.title || a.body !== b.body || JSON.stringify(a.labels) !== JSON.stringify(b.labels);
 }
+
+export function mergeSyncNotes(localNotes, remoteNotes, now = new Date().toISOString()) {
+  const localMap = new Map(localNotes.map((note) => {
+    const normalized = normalizeNote(note);
+    return [normalized.id, normalized];
+  }));
+  const remoteMap = new Map(remoteNotes.map((note) => {
+    const normalized = normalizeNote(note);
+    return [normalized.id, normalized];
+  }));
+  const merged = [];
+  let conflicts = 0;
+
+  const ids = new Set([...localMap.keys(), ...remoteMap.keys()]);
+  ids.forEach((id) => {
+    const local = localMap.get(id);
+    const remote = remoteMap.get(id);
+
+    if (!local) {
+      merged.push(remote);
+      return;
+    }
+
+    if (!remote) {
+      merged.push(local);
+      return;
+    }
+
+    if (areSameForSync(local, remote)) {
+      merged.push(local);
+      return;
+    }
+
+    const localTime = getSyncTimestamp(local);
+    const remoteTime = getSyncTimestamp(remote);
+
+    if (localTime > remoteTime) {
+      merged.push(local);
+      return;
+    }
+
+    if (remoteTime > localTime) {
+      merged.push(remote);
+      return;
+    }
+
+    merged.push(local);
+    merged.push(createConflictCopy(remote, now));
+    conflicts += 1;
+  });
+
+  return {
+    notes: merged.sort(sortNotes),
+    conflicts,
+  };
+}
+
+function areSameForSync(a, b) {
+  return JSON.stringify(syncComparable(a)) === JSON.stringify(syncComparable(b));
+}
+
+function syncComparable(note) {
+  return {
+    id: note.id,
+    title: note.title,
+    body: note.body,
+    color: note.color,
+    labels: [...normalizeLabels(note.labels)].sort(),
+    pinned: Boolean(note.pinned),
+    archived: Boolean(note.archived),
+    deleted: Boolean(note.deleted),
+    createdAt: note.createdAt,
+    updatedAt: note.updatedAt,
+    deletedAt: note.deletedAt,
+    order: note.order,
+    version: note.version,
+  };
+}
+
+function getSyncTimestamp(note) {
+  const deletedChange = note.deleted ? Date.parse(note.deletedAt || note.updatedAt || note.createdAt || 0) : Number.NaN;
+  if (Number.isFinite(deletedChange)) return deletedChange;
+  const updated = Date.parse(note.updatedAt || note.createdAt || 0);
+  return Number.isFinite(updated) ? updated : 0;
+}
+
+function createConflictCopy(note, now) {
+  return createNote({
+    ...note,
+    id: makeId(),
+    title: `${note.title || "Bez tytułu"} (konflikt)`,
+    updatedAt: now,
+    version: (Number(note.version) || 1) + 1,
+    dirty: true,
+    syncStatus: "local",
+    now,
+  });
+}

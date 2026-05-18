@@ -1,5 +1,6 @@
-import { APP_CONFIG } from "./config.js?v=20260518-auth-reload-status";
-import { GoogleAuth } from "./googleAuth.js?v=20260518-auth-reload-status";
+import { APP_CONFIG } from "./config.js?v=20260518-drive-two-way-merge";
+import { mergeSyncNotes } from "./core.js?v=20260518-drive-two-way-merge";
+import { GoogleAuth } from "./googleAuth.js?v=20260518-drive-two-way-merge";
 
 const DRIVE_FILES_ENDPOINT = "https://www.googleapis.com/drive/v3/files";
 const DRIVE_UPLOAD_ENDPOINT = "https://www.googleapis.com/upload/drive/v3/files";
@@ -166,15 +167,18 @@ export class SyncService {
         return this.publishResult(true, { action: "downloaded", imported: true });
       }
 
-      if (notesMatch(localNotes, remoteNotes)) {
-        this.syncStatus = "saved";
-        this.lastMessage = "Lokalne i zdalne notatki są już zgodne.";
-        return this.publishResult(true, { action: "noop" });
-      }
-
-      this.syncStatus = "conflict";
-      this.lastMessage = "Konflikt sync: lokalne i zdalne notatki mają dane. Merge będzie w następnym etapie.";
-      return this.publishResult(false, { action: "conflict" });
+      const merged = mergeSyncNotes(localNotes, remoteNotes);
+      await this.repository.replaceAll(merged.notes);
+      await this.updateSyncFile(token, remoteFile.id, merged.notes);
+      this.syncStatus = "saved";
+      this.lastMessage = merged.conflicts > 0
+        ? "Zsynchronizowano notatki. Utworzono kopie konfliktowe dla nierozstrzygalnych zmian."
+        : "Zsynchronizowano i scalono notatki.";
+      return this.publishResult(true, {
+        action: "merged",
+        imported: true,
+        conflicts: merged.conflicts,
+      });
     } catch (error) {
       this.lastError = error;
       this.syncStatus = "error";
@@ -332,36 +336,6 @@ function extractNotes(payload) {
   if (Array.isArray(payload)) return payload;
   if (Array.isArray(payload?.notes)) return payload.notes;
   return [];
-}
-
-function notesMatch(localNotes, remoteNotes) {
-  return stableStringifyNotes(localNotes) === stableStringifyNotes(remoteNotes);
-}
-
-function stableStringifyNotes(notes) {
-  return JSON.stringify([...notes]
-    .map((note) => normalizeComparableNote(note))
-    .sort((a, b) => String(a.id).localeCompare(String(b.id))));
-}
-
-function normalizeComparableNote(note) {
-  return {
-    id: note.id,
-    title: note.title,
-    body: note.body,
-    color: note.color,
-    labels: Array.isArray(note.labels) ? [...note.labels].sort() : [],
-    pinned: Boolean(note.pinned),
-    archived: Boolean(note.archived),
-    deleted: Boolean(note.deleted),
-    createdAt: note.createdAt,
-    updatedAt: note.updatedAt,
-    deletedAt: note.deletedAt,
-    order: note.order,
-    version: note.version,
-    dirty: Boolean(note.dirty),
-    syncStatus: note.syncStatus,
-  };
 }
 
 async function readResponseMessage(response) {

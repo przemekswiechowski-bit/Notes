@@ -1,10 +1,10 @@
-import { copyTextToClipboard } from "./clipboard.js?v=20260518-auth-reload-status";
-import { filterNotes } from "./core.js?v=20260518-auth-reload-status";
-import { EditorController } from "./editor.js?v=20260518-auth-reload-status";
-import { exportNotes, readImportedNotes } from "./importExport.js?v=20260518-auth-reload-status";
-import { NotesRepository } from "./notesRepository.js?v=20260518-auth-reload-status";
-import { NotesRenderer } from "./renderer.js?v=20260518-auth-reload-status";
-import { SyncService } from "./syncService.js?v=20260518-auth-reload-status";
+import { copyTextToClipboard } from "./clipboard.js?v=20260518-drive-two-way-merge";
+import { filterNotes } from "./core.js?v=20260518-drive-two-way-merge";
+import { EditorController } from "./editor.js?v=20260518-drive-two-way-merge";
+import { exportNotes, readImportedNotes } from "./importExport.js?v=20260518-drive-two-way-merge";
+import { NotesRepository } from "./notesRepository.js?v=20260518-drive-two-way-merge";
+import { NotesRenderer } from "./renderer.js?v=20260518-drive-two-way-merge";
+import { SyncService } from "./syncService.js?v=20260518-drive-two-way-merge";
 
 const $ = (id) => document.getElementById(id);
 
