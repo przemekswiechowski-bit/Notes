@@ -1,9 +1,10 @@
-import { APP_CONFIG } from "./config.js?v=20260518-drive-manual-sync";
-import { GoogleAuth } from "./googleAuth.js?v=20260518-drive-manual-sync";
+import { APP_CONFIG } from "./config.js?v=20260518-auth-reload-status";
+import { GoogleAuth } from "./googleAuth.js?v=20260518-auth-reload-status";
 
 const DRIVE_FILES_ENDPOINT = "https://www.googleapis.com/drive/v3/files";
 const DRIVE_UPLOAD_ENDPOINT = "https://www.googleapis.com/upload/drive/v3/files";
 const SYNC_FILE_NAME = "notes-sync.json";
+const AUTH_CONNECTED_STORAGE_KEY = "googleAuthWasConnected";
 
 export class SyncService {
   constructor(onStatus = () => {}, {
@@ -11,15 +12,18 @@ export class SyncService {
     googleAuth = null,
     fetchImpl = globalThis.fetch?.bind(globalThis),
     fileName = SYNC_FILE_NAME,
+    storage = createStorageAdapter(),
   } = {}) {
     this.onStatus = onStatus;
     this.repository = repository;
     this.fetchImpl = fetchImpl;
     this.fileName = fileName;
+    this.storage = storage;
     this.syncStatus = "local";
     this.authStatus = "not_configured";
     this.lastError = null;
     this.lastMessage = "";
+    this.authWasConnected = this.storage.get(AUTH_CONNECTED_STORAGE_KEY) === "true";
     this.googleAuth = googleAuth || new GoogleAuth({
       clientId: APP_CONFIG.GOOGLE_CLIENT_ID,
       scope: APP_CONFIG.GOOGLE_DRIVE_SCOPE,
@@ -28,6 +32,10 @@ export class SyncService {
         this.lastError = meta.error || null;
         if (status === "authorized" && this.syncStatus === "local") {
           this.syncStatus = "ready";
+        }
+        if (status === "authorized") {
+          this.authWasConnected = true;
+          this.storage.set(AUTH_CONNECTED_STORAGE_KEY, "true");
         }
         if (status === "signed_out" || status === "not_configured") {
           this.syncStatus = "local";
@@ -66,8 +74,11 @@ export class SyncService {
 
   async connectGoogle() {
     const result = await this.googleAuth.connect();
+    this.authStatus = this.googleAuth.getStatus();
     if (result.ok) {
       this.lastError = null;
+      this.authWasConnected = true;
+      this.storage.set(AUTH_CONNECTED_STORAGE_KEY, "true");
       this.syncStatus = "ready";
       this.lastMessage = "Google połączone.";
     }
@@ -79,7 +90,10 @@ export class SyncService {
 
   disconnectGoogle() {
     const result = this.googleAuth.disconnect();
+    this.authStatus = this.googleAuth.getStatus();
     this.lastError = null;
+    this.authWasConnected = false;
+    this.storage.remove(AUTH_CONNECTED_STORAGE_KEY);
     this.syncStatus = "local";
     this.lastMessage = "Google odłączone.";
     return {
@@ -198,6 +212,7 @@ export class SyncService {
     if (this.authStatus === "authorizing") return "Google: logowanie...";
     if (this.authStatus === "authorized") return "Google: zalogowany";
     if (this.authStatus === "error") return "Google: błąd logowania";
+    if (this.authWasConnected) return "Google: połącz ponownie";
     return "Google: niezalogowany";
   }
 
@@ -360,4 +375,30 @@ async function readResponseMessage(response) {
       return "";
     }
   }
+}
+
+function createStorageAdapter() {
+  return {
+    get(key) {
+      try {
+        return globalThis.localStorage?.getItem(key) ?? "";
+      } catch {
+        return "";
+      }
+    },
+    set(key, value) {
+      try {
+        globalThis.localStorage?.setItem(key, value);
+      } catch {
+        // ignore storage failures
+      }
+    },
+    remove(key) {
+      try {
+        globalThis.localStorage?.removeItem(key);
+      } catch {
+        // ignore storage failures
+      }
+    },
+  };
 }

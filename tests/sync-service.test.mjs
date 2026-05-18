@@ -1,8 +1,8 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 
-import { SyncService } from "../src/syncService.js";
 import { createNote } from "../src/core.js";
+import { SyncService } from "../src/syncService.js";
 
 class FakeGoogleAuth {
   constructor({ configured = true, status = "authorized", token = "token-123" } = {}) {
@@ -55,6 +55,21 @@ function createRepository(initialNotes = []) {
   };
 }
 
+function createMemoryStorage(initial = {}) {
+  const data = new Map(Object.entries(initial));
+  return {
+    get(key) {
+      return data.get(key) ?? "";
+    },
+    set(key, value) {
+      data.set(key, value);
+    },
+    remove(key) {
+      data.delete(key);
+    },
+  };
+}
+
 function jsonResponse(body, init = {}) {
   return {
     ok: init.ok ?? true,
@@ -79,6 +94,33 @@ describe("sync service scaffold", () => {
     const result = await sync.syncNow();
     assert.equal(result.ok, false);
     assert.match(result.message, /Połącz Google/i);
+  });
+
+  it("shows reconnect status after reload when Google was connected earlier", () => {
+    const sync = new SyncService(() => {}, {
+      googleAuth: new FakeGoogleAuth({ status: "signed_out" }),
+      storage: createMemoryStorage({ googleAuthWasConnected: "true" }),
+    });
+
+    const status = sync.getSyncStatus();
+    assert.equal(status.connected, false);
+    assert.equal(status.authStatus, "signed_out");
+    assert.equal(status.googleLabel, "Google: połącz ponownie");
+    assert.equal(status.syncLabel, "Sync: gotowy lokalnie");
+  });
+
+  it("returns to signed-out status after manual disconnect", () => {
+    const storage = createMemoryStorage({ googleAuthWasConnected: "true" });
+    const sync = new SyncService(() => {}, {
+      googleAuth: new FakeGoogleAuth({ status: "authorized" }),
+      storage,
+    });
+
+    sync.disconnectGoogle();
+    const status = sync.getSyncStatus();
+
+    assert.equal(storage.get("googleAuthWasConnected"), "");
+    assert.equal(status.googleLabel, "Google: niezalogowany");
   });
 
   it("uploads local notes when remote sync file does not exist", async () => {

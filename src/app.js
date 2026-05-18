@@ -1,10 +1,10 @@
-import { copyTextToClipboard } from "./clipboard.js?v=20260518-drive-manual-sync";
-import { filterNotes } from "./core.js?v=20260518-drive-manual-sync";
-import { EditorController } from "./editor.js?v=20260518-drive-manual-sync";
-import { exportNotes, readImportedNotes } from "./importExport.js?v=20260518-drive-manual-sync";
-import { NotesRepository } from "./notesRepository.js?v=20260518-drive-manual-sync";
-import { NotesRenderer } from "./renderer.js?v=20260518-drive-manual-sync";
-import { SyncService } from "./syncService.js?v=20260518-drive-manual-sync";
+import { copyTextToClipboard } from "./clipboard.js?v=20260518-auth-reload-status";
+import { filterNotes } from "./core.js?v=20260518-auth-reload-status";
+import { EditorController } from "./editor.js?v=20260518-auth-reload-status";
+import { exportNotes, readImportedNotes } from "./importExport.js?v=20260518-auth-reload-status";
+import { NotesRepository } from "./notesRepository.js?v=20260518-auth-reload-status";
+import { NotesRenderer } from "./renderer.js?v=20260518-auth-reload-status";
+import { SyncService } from "./syncService.js?v=20260518-auth-reload-status";
 
 const $ = (id) => document.getElementById(id);
 
