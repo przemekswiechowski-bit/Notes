@@ -1,6 +1,6 @@
-import { APP_CONFIG } from "./config.js?v=20260518-drive-two-way-merge";
-import { mergeSyncNotes } from "./core.js?v=20260518-drive-two-way-merge";
-import { GoogleAuth } from "./googleAuth.js?v=20260518-drive-two-way-merge";
+import { APP_CONFIG } from "./config.js?v=20260518-drive-sync-ux";
+import { mergeSyncNotes } from "./core.js?v=20260518-drive-sync-ux";
+import { GoogleAuth } from "./googleAuth.js?v=20260518-drive-sync-ux";
 
 const DRIVE_FILES_ENDPOINT = "https://www.googleapis.com/drive/v3/files";
 const DRIVE_UPLOAD_ENDPOINT = "https://www.googleapis.com/upload/drive/v3/files";
@@ -86,6 +86,37 @@ export class SyncService {
     return {
       ...result,
       ...this.getSyncStatus(),
+    };
+  }
+
+  async trySilentReconnect() {
+    if (!this.googleAuth?.isConfigured?.() || !this.authWasConnected || this.authStatus === "authorized") {
+      return {
+        ok: this.authStatus === "authorized",
+        ...this.getSyncStatus(),
+      };
+    }
+
+    const result = await this.googleAuth.reconnectSilently();
+    this.authStatus = this.googleAuth.getStatus();
+
+    if (result.ok) {
+      this.lastError = null;
+      this.authWasConnected = true;
+      this.storage.set(AUTH_CONNECTED_STORAGE_KEY, "true");
+      this.syncStatus = "ready";
+      this.lastMessage = "Przywrócono połączenie z Google.";
+    } else {
+      this.lastError = null;
+      this.syncStatus = "local";
+      this.lastMessage = "";
+    }
+
+    const payload = this.publish();
+    return {
+      ok: result.ok,
+      silent: true,
+      ...payload,
     };
   }
 
@@ -203,9 +234,10 @@ export class SyncService {
   }
 
   publishResult(ok, extra = {}) {
+    const payload = this.publish();
     return {
       ok,
-      ...this.getSyncStatus(),
+      ...payload,
       ...extra,
       message: this.lastMessage,
     };

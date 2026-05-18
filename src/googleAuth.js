@@ -30,6 +30,22 @@ export class GoogleAuth {
   }
 
   async connect() {
+    return this.requestToken({
+      prompt: this.tokenResponse ? "" : "consent",
+      onFailureStatus: "error",
+      silent: false,
+    });
+  }
+
+  async reconnectSilently() {
+    return this.requestToken({
+      prompt: "",
+      onFailureStatus: this.isConfigured() ? "signed_out" : "not_configured",
+      silent: true,
+    });
+  }
+
+  async requestToken({ prompt, onFailureStatus, silent }) {
     if (!this.isConfigured()) {
       this.setStatus("not_configured");
       return {
@@ -54,9 +70,7 @@ export class GoogleAuth {
         this.tokenClient.error_callback = (error) => {
           reject(new Error(error?.message || "Google auth popup error"));
         };
-        this.tokenClient.requestAccessToken({
-          prompt: this.tokenResponse ? "" : "consent",
-        });
+        this.tokenClient.requestAccessToken({ prompt });
       });
 
       this.tokenResponse = response;
@@ -66,13 +80,16 @@ export class GoogleAuth {
         ok: true,
         status: this.status,
         accessToken: this.getAccessToken(),
+        silent,
       };
     } catch (error) {
-      this.lastError = error;
-      this.setStatus("error", { error });
+      this.tokenResponse = null;
+      this.lastError = silent ? null : error;
+      this.setStatus(onFailureStatus, silent ? {} : { error });
       return {
         ok: false,
         status: this.status,
+        silent,
         message: error?.message || "Nie udalo sie zalogowac do Google.",
       };
     }

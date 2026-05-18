@@ -1,10 +1,11 @@
-import { copyTextToClipboard } from "./clipboard.js?v=20260518-drive-two-way-merge";
-import { filterNotes } from "./core.js?v=20260518-drive-two-way-merge";
-import { EditorController } from "./editor.js?v=20260518-drive-two-way-merge";
-import { exportNotes, readImportedNotes } from "./importExport.js?v=20260518-drive-two-way-merge";
-import { NotesRepository } from "./notesRepository.js?v=20260518-drive-two-way-merge";
-import { NotesRenderer } from "./renderer.js?v=20260518-drive-two-way-merge";
-import { SyncService } from "./syncService.js?v=20260518-drive-two-way-merge";
+import { copyTextToClipboard } from "./clipboard.js?v=20260518-drive-sync-ux";
+import { filterNotes } from "./core.js?v=20260518-drive-sync-ux";
+import { EditorController } from "./editor.js?v=20260518-drive-sync-ux";
+import { exportNotes, readImportedNotes } from "./importExport.js?v=20260518-drive-sync-ux";
+import { NotesRepository } from "./notesRepository.js?v=20260518-drive-sync-ux";
+import { NotesRenderer } from "./renderer.js?v=20260518-drive-sync-ux";
+import { SyncService } from "./syncService.js?v=20260518-drive-sync-ux";
+import { runSyncFromSettings } from "./syncUi.js?v=20260518-drive-sync-ux";
 
 const $ = (id) => document.getElementById(id);
 
@@ -162,12 +163,15 @@ function bindEvents() {
     showToast("Odłączono Google.");
   });
   elements.syncNowButton?.addEventListener("click", async () => {
-    const result = await sync.syncNow();
-    if (result.imported) {
-      state.notes = await repository.list();
-      render();
-    }
-    showToast(result.message || (result.ok ? "Synchronizacja zakończona." : "Synchronizacja nie powiodła się."));
+    await runSyncFromSettings({
+      sync,
+      repository,
+      state,
+      render,
+      renderSyncStatus,
+      showToast,
+      closeSettingsMenu: () => elements.settingsMenu.classList.add("hidden"),
+    });
   });
   document.addEventListener("click", (event) => {
     if (!event.target.closest(".settings-menu") && !event.target.closest("#settingsToggle")) {
@@ -190,6 +194,16 @@ async function load() {
   try {
     state.notes = await repository.list();
     render();
+    const reconnectResult = await sync.trySilentReconnect();
+    renderSyncStatus(reconnectResult);
+    if (reconnectResult.ok) {
+      const result = await sync.syncNow();
+      renderSyncStatus(result);
+      if (result.imported || result.action === "merged") {
+        state.notes = await repository.list();
+        render();
+      }
+    }
   } catch (error) {
     showToast(error.message || "Nie udało się otworzyć lokalnej bazy.");
   }
@@ -460,3 +474,4 @@ function renderSyncStatus(syncState = {}) {
     elements.syncNowButton.disabled = syncState.authStatus === "authorizing" || syncState.syncStatus === "syncing";
   }
 }
+
