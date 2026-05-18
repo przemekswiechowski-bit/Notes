@@ -1,0 +1,10 @@
+{
+  "name": "notes-keep-style",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test tests/core.test.mjs",
+    "test:e2e": "powershell -ExecutionPolicy Bypass -File tests/run-e2e.ps1"
+  }
+}

@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="pl">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#f9c74f">
+    <title>Notes</title>
+    <link rel="stylesheet" href="./styles.css?v=20260517-ui-polish-3">
+  </head>
+  <body>
+    <div class="app-shell" id="appShell">
+      <header class="topbar">
+        <button class="icon-button menu-toggle" id="menuToggle" aria-label="Pokaż menu">
+          <span class="ui-icon">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M4 7h16M4 12h16M4 17h16"></path>
+            </svg>
+          </span>
+        </button>
+        <a class="brand" href="./" aria-label="Notes">
+          <span class="brand-mark">N</span>
+          <span>Notes</span>
+        </a>
+        <label class="search-wrap" for="searchInput">
+          <span class="ui-icon">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <circle cx="11" cy="11" r="6"></circle>
+              <path d="m16 16 4.5 4.5"></path>
+            </svg>
+          </span>
+          <input id="searchInput" type="search" placeholder="Szukaj" autocomplete="off">
+        </label>
+        <div class="top-actions">
+          <button class="icon-button" id="themeToggle" aria-label="Przełącz tryb jasny lub ciemny">
+            <span class="ui-icon">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M12 3a9 9 0 1 0 9 9A7 7 0 1 1 12 3Z"></path>
+              </svg>
+            </span>
+          </button>
+          <button class="icon-button" id="settingsToggle" aria-label="Ustawienia">
+            <span class="ui-icon">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <circle cx="12" cy="12" r="3.2"></circle>
+                <path d="M19.4 15a1 1 0 0 0 .2 1.1l.1.1a2 2 0 0 1 0 2.8 2 2 0 0 1-2.8 0l-.1-.1a1 1 0 0 0-1.1-.2 1 1 0 0 0-.6.9V20a2 2 0 0 1-4 0v-.2a1 1 0 0 0-.6-.9 1 1 0 0 0-1.1.2l-.1.1a2 2 0 0 1-2.8 0 2 2 0 0 1 0-2.8l.1-.1a1 1 0 0 0 .2-1.1 1 1 0 0 0-.9-.6H4a2 2 0 0 1 0-4h.2a1 1 0 0 0 .9-.6 1 1 0 0 0-.2-1.1l-.1-.1a2 2 0 0 1 0-2.8 2 2 0 0 1 2.8 0l.1.1a1 1 0 0 0 1.1.2 1 1 0 0 0 .6-.9V4a2 2 0 0 1 4 0v.2a1 1 0 0 0 .6.9 1 1 0 0 0 1.1-.2l.1-.1a2 2 0 0 1 2.8 0 2 2 0 0 1 0 2.8l-.1.1a1 1 0 0 0-.2 1.1 1 1 0 0 0 .9.6H20a2 2 0 0 1 0 4h-.2a1 1 0 0 0-.9.6Z"></path>
+              </svg>
+            </span>
+          </button>
+        </div>
+        <div class="settings-menu hidden" id="settingsMenu">
+          <button id="exportButton">Eksport JSON</button>
+          <label class="import-label">
+            Import JSON
+            <input id="importInput" type="file" accept="application/json,.json">
+          </label>
+          <button id="themeMenuButton">Jasny / ciemny</button>
+          <p id="syncStatus">Sync: lokalny</p>
+        </div>
+      </header>
+
+      <aside class="sidebar" id="sidebar">
+        <nav>
+          <button class="nav-item active" data-view="notes">
+            <span class="ui-icon">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M9 18h6"></path>
+                <path d="M10 22h4"></path>
+                <path d="M8.5 14.5a6 6 0 1 1 7 0c-.9.7-1.5 1.8-1.5 2.9H10c0-1.1-.6-2.2-1.5-2.9Z"></path>
+              </svg>
+            </span>
+            <span>Notatki</span>
+          </button>
+          <div class="label-list" id="labelList"></div>
+          <button class="nav-item" data-view="archive">
+            <span class="ui-icon">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <rect x="4" y="5" width="16" height="4" rx="1.5"></rect>
+                <path d="M6 9h12v9a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2Z"></path>
+                <path d="M10 13h4"></path>
+              </svg>
+            </span>
+            <span>Archiwum</span>
+          </button>
+          <button class="nav-item" data-view="trash">
+            <span class="ui-icon">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M4 7h16"></path>
+                <path d="M9 7V5.5A1.5 1.5 0 0 1 10.5 4h3A1.5 1.5 0 0 1 15 5.5V7"></path>
+                <path d="M7 7l1 12a2 2 0 0 0 2 2h4a2 2 0 0 0 2-2l1-12"></path>
+              </svg>
+            </span>
+            <span>Kosz</span>
+          </button>
+        </nav>
+      </aside>
+
+      <main class="content">
+        <section class="quick-note" id="quickNote" aria-label="Utwórz notatkę">
+          <input id="quickTitle" class="quick-title" type="text" placeholder="Tytuł">
+          <textarea id="quickBody" rows="1" placeholder="Utwórz notatkę..."></textarea>
+          <div class="quick-actions">
+            <button class="icon-action" id="quickLabelToggle" type="button" aria-label="Wybierz etykietę" title="Etykieta">
+              <span class="ui-icon">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M4 10.5V5a1 1 0 0 1 1-1h5.5L20 13.5 13.5 20 4 10.5Z"></path>
+                  <circle cx="8" cy="8" r="1.3"></circle>
+                </svg>
+              </span>
+            </button>
+            <div class="quick-label-menu hidden" id="quickLabelMenu"></div>
+            <button class="icon-action" id="quickColorToggle" type="button" aria-label="Wybierz kolor" title="Kolor">
+              <span class="ui-icon">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <circle cx="13" cy="11" r="7"></circle>
+                  <circle cx="9" cy="8" r="1"></circle>
+                  <circle cx="15" cy="7.5" r="1"></circle>
+                  <circle cx="17.5" cy="12" r="1"></circle>
+                  <circle cx="12" cy="15.5" r="1"></circle>
+                </svg>
+              </span>
+            </button>
+            <div class="quick-color-menu hidden" id="quickColorMenu"></div>
+            <select id="quickLabel" class="visually-hidden-control" aria-label="Etykieta">
+              <option value="">Bez etykiety</option>
+            </select>
+            <select id="quickColor" class="visually-hidden-control" aria-label="Kolor">
+              <option value="default">Domyslny</option>
+            </select>
+            <button id="quickAdd">Dodaj</button>
+          </div>
+        </section>
+
+        <section class="section-heading" id="pinnedHeading" hidden>Przypięte</section>
+        <section class="notes-grid" id="pinnedGrid" aria-label="Przypięte notatki"></section>
+        <section class="section-heading" id="othersHeading" hidden>Inne</section>
+        <section class="notes-grid" id="notesGrid" aria-label="Notatki"></section>
+        <section class="empty-state hidden" id="emptyState">Brak notatek w tym widoku.</section>
+      </main>
+    </div>
+
+    <div class="modal-backdrop hidden" id="editorBackdrop">
+      <article class="editor-modal" id="editorModal" role="dialog" aria-modal="true" aria-label="Edytor notatki">
+        <input id="editorTitle" class="editor-title" type="text" placeholder="Tytuł">
+        <textarea id="editorBody" class="editor-body" placeholder="Treść notatki"></textarea>
+        <div class="editor-meta">
+          <span id="charCount">0 znaków</span>
+          <span id="dateInfo"></span>
+        </div>
+        <div class="editor-labels" id="editorLabels"></div>
+        <div class="editor-actions">
+          <div class="editor-color-controls">
+          <select id="editorColor" class="visually-hidden-control" aria-label="Kolor notatki">
+            <option value="default">Domyślny</option>
+            <option value="rose">Róż</option>
+            <option value="peach">Brzoskwinia</option>
+            <option value="amber">Bursztyn</option>
+            <option value="sand">Piasek</option>
+            <option value="mint">Mięta</option>
+            <option value="green">Zieleń</option>
+            <option value="lime">Limonka</option>
+            <option value="teal">Teal</option>
+            <option value="cyan">Cyjan</option>
+            <option value="blue">Niebieski</option>
+            <option value="indigo">Indygo</option>
+            <option value="violet">Fiolet</option>
+            <option value="coral">Koral</option>
+            <option value="custom">Własny</option>
+          </select>
+          <div id="editorColorPalette" class="editor-color-palette" aria-label="Kolor notatki"></div>
+          <input id="editorCustomColor" class="custom-color-input" type="color" value="#fecdd3" aria-label="Własny kolor notatki">
+          </div>
+          <div class="editor-action-buttons">
+          <button id="editorCopy">Kopiuj</button>
+          <button id="editorPin">Przypnij</button>
+          <button id="editorArchive">Archiwizuj</button>
+          <button id="editorDelete">Usuń</button>
+          <button class="primary" id="editorClose">Zamknij</button>
+          </div>
+        </div>
+      </article>
+    </div>
+
+    <div class="toast hidden" id="toast"></div>
+    <script type="module" src="./src/app.js?v=20260517-ui-polish-3"></script>
+  </body>
+</html>

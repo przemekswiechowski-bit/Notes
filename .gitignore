@@ -1,0 +1,8 @@
+node_modules/
+*.log
+server.err.log
+server.out.log
+notes-e2e-profile/
+.tmp/
+tmp/
+temp/
