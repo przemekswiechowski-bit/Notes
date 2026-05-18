@@ -8,7 +8,7 @@ describe("sync service scaffold", () => {
     const sync = new SyncService();
 
     const initial = sync.getSyncStatus();
-    assert.equal(initial.authStatus, "not_configured");
+    assert.equal(initial.authStatus, "signed_out");
     assert.match(initial.label, /Google/i);
 
     const result = await sync.syncNow();
