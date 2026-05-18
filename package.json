@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "test": "node --test tests/core.test.mjs",
+    "test": "node --test tests/core.test.mjs tests/google-auth.test.mjs tests/sync-service.test.mjs",
     "test:e2e": "powershell -ExecutionPolicy Bypass -File tests/run-e2e.ps1"
   }
 }

@@ -27,6 +27,31 @@ https://przemekswiechowski-bit.github.io/Notes/
 
 Kolejny wiekszy etap to Google Drive sync dla tej samej aplikacji frontendowej hostowanej na GitHub Pages.
 
+## Google Drive sync setup - planned/auth scaffold
+
+Auth scaffold jest przygotowany, ale sam sync danych nie jest jeszcze wdrozony.
+
+Na tym etapie:
+
+- aplikacja potrafi przygotowac flow logowania Google pod przyszly Drive sync,
+- nadal nie zapisuje notatek do Google Drive,
+- do uruchomienia logowania potrzebny jest OAuth Client ID typu Web application.
+
+Client ID trzeba wpisac w:
+
+- `src/config.js`
+
+Authorized JavaScript origins, ktore trzeba bedzie dodac w Google Cloud Console:
+
+- `https://przemekswiechowski-bit.github.io`
+- `http://127.0.0.1:4173`
+- `http://localhost:4173`
+
+Wazne:
+
+- frontend nie uzywa i nie powinien uzywac `client secret`,
+- nie commitujemy tokenow ani danych logowania do repozytorium.
+
 ## Uruchomienie lokalne
 
 W katalogu projektu uruchom prosty serwer statyczny:
