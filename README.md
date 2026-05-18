@@ -2,6 +2,31 @@
 
 Lekki notatnik webowy w stylu Google Keep. Aplikacja jest statyczna, bez backendu i bez frameworkow. Dane notatek sa zapisywane lokalnie w przegladarce przez IndexedDB.
 
+## Live demo
+
+GitHub Pages:
+
+https://przemekswiechowski-bit.github.io/Notes/
+
+## Current status
+
+- static frontend bez backendu,
+- local-first storage przez IndexedDB,
+- dziala na GitHub Pages,
+- dziala na desktopie i na mobile z dwukolumnowym ukladem kart,
+- wspiera import i eksport JSON,
+- nie ma jeszcze cloud sync.
+
+## Data storage warning
+
+- dane z `http://127.0.0.1:4173/` i dane z GitHub Pages to osobne bazy,
+- kazde urzadzenie i kazdy origin przegladarki ma osobna lokalna baze IndexedDB,
+- przed wdrozeniem syncu reczne przenoszenie danych miedzy srodowiskami odbywa sie przez eksport i import JSON.
+
+## Next milestone
+
+Kolejny wiekszy etap to Google Drive sync dla tej samej aplikacji frontendowej hostowanej na GitHub Pages.
+
 ## Uruchomienie lokalne
 
 W katalogu projektu uruchom prosty serwer statyczny:
