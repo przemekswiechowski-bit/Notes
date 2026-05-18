@@ -1,10 +1,10 @@
-import { copyTextToClipboard } from "./clipboard.js?v=20260518-google-auth-scaffold";
-import { filterNotes } from "./core.js?v=20260518-google-auth-scaffold";
-import { EditorController } from "./editor.js?v=20260518-google-auth-scaffold";
-import { exportNotes, readImportedNotes } from "./importExport.js?v=20260518-google-auth-scaffold";
-import { NotesRepository } from "./notesRepository.js?v=20260518-google-auth-scaffold";
-import { NotesRenderer } from "./renderer.js?v=20260518-google-auth-scaffold";
-import { SyncService } from "./syncService.js?v=20260518-google-auth-scaffold";
+import { copyTextToClipboard } from "./clipboard.js?v=20260518-drive-manual-sync";
+import { filterNotes } from "./core.js?v=20260518-drive-manual-sync";
+import { EditorController } from "./editor.js?v=20260518-drive-manual-sync";
+import { exportNotes, readImportedNotes } from "./importExport.js?v=20260518-drive-manual-sync";
+import { NotesRepository } from "./notesRepository.js?v=20260518-drive-manual-sync";
+import { NotesRenderer } from "./renderer.js?v=20260518-drive-manual-sync";
+import { SyncService } from "./syncService.js?v=20260518-drive-manual-sync";
 
 const $ = (id) => document.getElementById(id);
 
@@ -35,9 +35,11 @@ const elements = {
   themeMenuButton: $("themeMenuButton"),
   exportButton: $("exportButton"),
   importInput: $("importInput"),
-  syncStatus: $("syncStatus"),
+  googleStatus: $("googleStatus"),
+  driveSyncStatus: $("driveSyncStatus"),
   googleConnectButton: $("googleConnectButton"),
   googleDisconnectButton: $("googleDisconnectButton"),
+  syncNowButton: $("syncNowButton"),
   toast: $("toast"),
 };
 
@@ -67,7 +69,7 @@ const state = {
   query: "",
 };
 
-const sync = new SyncService(renderSyncStatus);
+const sync = new SyncService(renderSyncStatus, { repository });
 
 const THEME_ICONS = {
   light: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3a9 9 0 1 0 9 9A7 7 0 1 1 12 3Z"></path></svg>',
@@ -158,6 +160,14 @@ function bindEvents() {
   elements.googleDisconnectButton?.addEventListener("click", () => {
     sync.disconnectGoogle();
     showToast("Odłączono Google.");
+  });
+  elements.syncNowButton?.addEventListener("click", async () => {
+    const result = await sync.syncNow();
+    if (result.imported) {
+      state.notes = await repository.list();
+      render();
+    }
+    showToast(result.message || (result.ok ? "Synchronizacja zakończona." : "Synchronizacja nie powiodła się."));
   });
   document.addEventListener("click", (event) => {
     if (!event.target.closest(".settings-menu") && !event.target.closest("#settingsToggle")) {
@@ -433,12 +443,20 @@ function syncThemeToggleIcon() {
 }
 
 function renderSyncStatus(syncState = {}) {
-  elements.syncStatus.textContent = syncState.label || "Google: niezalogowany";
+  if (elements.googleStatus) {
+    elements.googleStatus.textContent = syncState.googleLabel || syncState.label || "Google: niezalogowany";
+  }
+  if (elements.driveSyncStatus) {
+    elements.driveSyncStatus.textContent = syncState.syncLabel || "Sync: gotowy lokalnie";
+  }
   if (elements.googleConnectButton) {
     elements.googleConnectButton.classList.toggle("hidden", Boolean(syncState.connected));
     elements.googleConnectButton.disabled = syncState.authStatus === "authorizing";
   }
   if (elements.googleDisconnectButton) {
     elements.googleDisconnectButton.classList.toggle("hidden", !syncState.connected);
+  }
+  if (elements.syncNowButton) {
+    elements.syncNowButton.disabled = syncState.authStatus === "authorizing" || syncState.syncStatus === "syncing";
   }
 }

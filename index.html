@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="theme-color" content="#f9c74f">
     <title>Notes</title>
-    <link rel="stylesheet" href="./styles.css?v=20260518-google-auth-scaffold">
+    <link rel="stylesheet" href="./styles.css?v=20260518-drive-manual-sync">
   </head>
   <body>
     <div class="app-shell" id="appShell">
@@ -54,9 +54,11 @@
             <input id="importInput" type="file" accept="application/json,.json">
           </label>
           <button id="themeMenuButton">Jasny / ciemny</button>
-          <p id="syncStatus">Google: brak konfiguracji</p>
+          <p id="googleStatus">Google: brak konfiguracji</p>
+          <p id="driveSyncStatus">Sync: gotowy lokalnie</p>
           <button id="googleConnectButton">Połącz Google</button>
           <button class="hidden" id="googleDisconnectButton">Odłącz Google</button>
+          <button id="syncNowButton">Synchronizuj teraz</button>
         </div>
       </header>
 
@@ -183,6 +185,6 @@
     </div>
 
     <div class="toast hidden" id="toast"></div>
-    <script type="module" src="./src/app.js?v=20260518-google-auth-scaffold"></script>
+    <script type="module" src="./src/app.js?v=20260518-drive-manual-sync"></script>
   </body>
 </html>
