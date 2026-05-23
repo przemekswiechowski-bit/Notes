@@ -6,6 +6,7 @@ import { NotesRepository } from "./notesRepository.js?v=20260518-drive-sync-ux";
 import { NotesRenderer } from "./renderer.js?v=20260518-drive-sync-ux";
 import { SyncService } from "./syncService.js?v=20260518-drive-sync-ux";
 import { runSyncFromSettings } from "./syncUi.js?v=20260518-drive-sync-ux";
+import { emptyTrash, getTrashNotes } from "./trashActions.js?v=20260523-empty-trash";
 
 const $ = (id) => document.getElementById(id);
 
@@ -41,6 +42,13 @@ const elements = {
   googleConnectButton: $("googleConnectButton"),
   googleDisconnectButton: $("googleDisconnectButton"),
   syncNowButton: $("syncNowButton"),
+  trashToolbar: $("trashToolbar"),
+  emptyTrashButton: $("emptyTrashButton"),
+  confirmBackdrop: $("confirmBackdrop"),
+  confirmTitle: $("confirmTitle"),
+  confirmMessage: $("confirmMessage"),
+  confirmCancel: $("confirmCancel"),
+  confirmAccept: $("confirmAccept"),
   toast: $("toast"),
 };
 
@@ -188,6 +196,16 @@ function bindEvents() {
 
   elements.exportButton.addEventListener("click", () => exportNotes(state.notes));
   elements.importInput.addEventListener("change", importFile);
+  elements.emptyTrashButton?.addEventListener("click", emptyTrashView);
+  elements.confirmCancel?.addEventListener("click", closeConfirmDialog);
+  elements.confirmBackdrop?.addEventListener("click", (event) => {
+    if (event.target === elements.confirmBackdrop) closeConfirmDialog();
+  });
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && !elements.confirmBackdrop?.classList.contains("hidden")) {
+      closeConfirmDialog();
+    }
+  });
 }
 
 async function load() {
@@ -213,6 +231,7 @@ function render() {
   const filtered = filterNotes(state.notes, state);
   renderer.render({ notes: state.notes, filtered, view: state.view, label: state.label });
   updateActiveNav();
+  updateTrashToolbar();
 }
 
 function updateActiveNav() {
@@ -361,6 +380,63 @@ async function importFile(event) {
   } finally {
     event.target.value = "";
   }
+}
+
+async function emptyTrashView() {
+  const result = await emptyTrash({
+    notes: state.notes,
+    repository,
+    sync,
+    showToast,
+    confirm: (count) => confirmEmptyTrash(count),
+  });
+  if (!result.ok) return;
+  state.notes = state.notes.filter((note) => !note.deleted);
+  render();
+}
+
+function updateTrashToolbar() {
+  if (!elements.trashToolbar || !elements.emptyTrashButton) return;
+  const trashCount = getTrashNotes(state.notes).length;
+  const show = state.view === "trash" && trashCount > 0;
+  elements.trashToolbar.classList.toggle("hidden", !show);
+  elements.emptyTrashButton.disabled = !show;
+}
+
+function confirmEmptyTrash(count) {
+  return new Promise((resolve) => {
+    if (!elements.confirmBackdrop) {
+      resolve(globalThis.confirm?.(`Trwale usunąć ${count} notatek z kosza?`) ?? false);
+      return;
+    }
+
+    elements.confirmTitle.textContent = "Opróżnić kosz?";
+    elements.confirmMessage.textContent = count === 1
+      ? "Ta notatka zostanie trwale usunięta. Tej operacji nie można cofnąć."
+      : `${count} notatek zostanie trwale usuniętych. Tej operacji nie można cofnąć.`;
+    elements.confirmAccept.textContent = "Usuń wszystkie";
+    elements.confirmBackdrop.classList.remove("hidden");
+    elements.confirmAccept.focus();
+
+    let settled = false;
+    const finish = (value) => {
+      if (settled) return;
+      settled = true;
+      elements.confirmAccept.removeEventListener("click", accept);
+      elements.confirmCancel.removeEventListener("click", cancel);
+      closeConfirmDialog();
+      resolve(value);
+    };
+    const accept = () => finish(true);
+    const cancel = () => finish(false);
+
+    elements.confirmAccept.addEventListener("click", accept);
+    elements.confirmCancel.addEventListener("click", cancel);
+  });
+}
+
+function closeConfirmDialog() {
+  elements.confirmBackdrop?.classList.add("hidden");
 }
 
 function findNote(id) {

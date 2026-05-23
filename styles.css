@@ -465,6 +465,28 @@ button {
   font-weight: 700;
 }
 
+.danger-button {
+  border-radius: 8px;
+  background: #b3261e;
+  color: #fff;
+  font-weight: 700;
+}
+
+.danger-button:hover {
+  background: #8c1d18;
+}
+
+.trash-toolbar {
+  display: flex;
+  justify-content: flex-end;
+  margin: -8px 0 18px;
+}
+
+.trash-toolbar .danger-button {
+  min-height: 40px;
+  padding: 8px 14px;
+}
+
 .section-heading {
   width: 100%;
   margin: 16px 0 10px;
@@ -782,6 +804,54 @@ button {
   background: var(--editor-bg-light, var(--surface));
   box-shadow: 0 12px 36px rgba(0, 0, 0, 0.32);
   overflow: hidden;
+}
+
+.confirm-backdrop {
+  place-items: center;
+  padding: 16px;
+}
+
+.confirm-dialog {
+  width: min(420px, 100%);
+  padding: 22px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--text);
+  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.34);
+}
+
+.confirm-dialog h2 {
+  margin: 0 0 8px;
+  font-size: 20px;
+}
+
+.confirm-dialog p {
+  margin: 0 0 20px;
+  color: var(--muted);
+}
+
+.confirm-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.confirm-actions button {
+  min-height: 40px;
+  padding: 8px 14px;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text);
+}
+
+.confirm-actions button:hover {
+  background: var(--surface-soft);
+}
+
+.confirm-actions .danger-button {
+  background: #b3261e;
+  color: #fff;
 }
 
 .editor-title,
