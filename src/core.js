@@ -370,6 +370,7 @@ export function mergeSyncNotes(localNotes, remoteNotes, now = new Date().toISOSt
     const remote = remoteMap.get(id);
 
     if (!local) {
+      if (remote.deleted) return;
       merged.push(remote);
       return;
     }

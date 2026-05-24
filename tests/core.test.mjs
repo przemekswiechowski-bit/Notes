@@ -9,6 +9,7 @@ import {
   getCardMenuActions,
   getInlineCardActions,
   mergeImportedNotes,
+  mergeSyncNotes,
   moveToTrash,
   previewText,
   resolveNoteColor,
@@ -196,6 +197,24 @@ describe("core note behavior", () => {
     assert.equal(resolveThemeColor("rose", "dark"), "#542330");
     assert.equal(resolveThemeColor("rose", "dark"), resolveThemeColor("rose", "dark"));
     assert.equal(resolveThemeColor("#123abc", "dark"), "#123abc");
+  });
+
+  it("does not resurrect remote-only trashed notes after local trash was emptied", () => {
+    const remoteTrash = {
+      ...createNote({
+        id: "remote-trash",
+        title: "Already removed",
+        body: "Should stay gone",
+        now: "2026-05-24T10:00:00.000Z",
+      }),
+      deleted: true,
+      deletedAt: "2026-05-24T10:10:00.000Z",
+      updatedAt: "2026-05-24T10:10:00.000Z",
+    };
+
+    const merged = mergeSyncNotes([], [remoteTrash]);
+
+    assert.deepEqual(merged.notes, []);
   });
 
   it("falls back when async clipboard is unavailable", async () => {

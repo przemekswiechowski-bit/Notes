@@ -248,6 +248,46 @@ describe("sync service scaffold", () => {
     assert.deepEqual(repository.getReplacedWith(), [remoteNote]);
   });
 
+  it("does not import remote-only deleted notes after local trash was emptied", async () => {
+    const remoteDeleted = {
+      ...createNote({
+        id: "remote-deleted",
+        title: "Removed",
+        body: "Trash should stay empty",
+        updatedAt: "2026-05-24T10:10:00.000Z",
+      }),
+      deleted: true,
+      deletedAt: "2026-05-24T10:10:00.000Z",
+      updatedAt: "2026-05-24T10:10:00.000Z",
+    };
+    const repository = createRepository([]);
+    const requests = [];
+    const fetchImpl = async (url, options = {}) => {
+      requests.push({ url, options });
+      if (String(url).includes("/drive/v3/files?")) {
+        return jsonResponse({ files: [{ id: "remote-file-trash", name: "notes-sync.json" }] });
+      }
+      if (String(url).includes("/drive/v3/files/remote-file-trash?alt=media")) {
+        return jsonResponse({ app: "Notes", version: 1, notes: [remoteDeleted] });
+      }
+      if (String(url).includes("upload/drive/v3/files/remote-file-trash?uploadType=multipart")) {
+        return jsonResponse({ id: "remote-file-trash" });
+      }
+      throw new Error(`Unexpected request: ${url}`);
+    };
+    const sync = new SyncService(() => {}, {
+      repository,
+      googleAuth: new FakeGoogleAuth(),
+      fetchImpl,
+    });
+
+    const result = await sync.syncNow();
+
+    assert.equal(result.ok, true);
+    assert.deepEqual(repository.getNotes(), []);
+    assert.match(String(requests.at(-1).options.body), /"notes":\[\]/);
+  });
+
   it("merges local A+C with remote A+B into A+B+C", async () => {
     const shared = createNote({ id: "shared", title: "A", body: "shared" });
     const localOnly = createNote({ id: "local-only", title: "C", body: "local only" });

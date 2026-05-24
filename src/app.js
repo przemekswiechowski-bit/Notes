@@ -4,7 +4,7 @@ import { EditorController } from "./editor.js?v=20260518-drive-sync-ux";
 import { exportNotes, readImportedNotes } from "./importExport.js?v=20260518-drive-sync-ux";
 import { NotesRepository } from "./notesRepository.js?v=20260518-drive-sync-ux";
 import { NotesRenderer } from "./renderer.js?v=20260518-drive-sync-ux";
-import { SyncService } from "./syncService.js?v=20260518-drive-sync-ux";
+import { SyncService } from "./syncService.js?v=20260524-trash-sync";
 import { runSyncFromSettings } from "./syncUi.js?v=20260518-drive-sync-ux";
 import { emptyTrash, getTrashNotes } from "./trashActions.js?v=20260523-empty-trash";
 

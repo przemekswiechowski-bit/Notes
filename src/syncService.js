@@ -1,5 +1,5 @@
 import { APP_CONFIG } from "./config.js?v=20260518-drive-sync-ux";
-import { mergeSyncNotes } from "./core.js?v=20260518-drive-sync-ux";
+import { mergeSyncNotes } from "./core.js?v=20260524-trash-sync";
 import { GoogleAuth } from "./googleAuth.js?v=20260518-drive-sync-ux";
 
 const DRIVE_FILES_ENDPOINT = "https://www.googleapis.com/drive/v3/files";
@@ -192,9 +192,15 @@ export class SyncService {
       }
 
       if (localEmpty) {
-        await this.repository.replaceAll(remoteNotes);
+        const merged = mergeSyncNotes(localNotes, remoteNotes);
+        await this.repository.replaceAll(merged.notes);
+        if (merged.notes.length !== remoteNotes.length || merged.conflicts > 0) {
+          await this.updateSyncFile(token, remoteFile.id, merged.notes);
+        }
         this.syncStatus = "pulled";
-        this.lastMessage = "Pobrano notatki z Google Drive do lokalnej bazy.";
+        this.lastMessage = merged.notes.length > 0
+          ? "Pobrano notatki z Google Drive do lokalnej bazy."
+          : "Kosz pozostał pusty po synchronizacji z Google Drive.";
         return this.publishResult(true, { action: "downloaded", imported: true });
       }
 

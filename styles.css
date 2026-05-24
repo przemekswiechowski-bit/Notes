@@ -854,6 +854,11 @@ button {
   color: #fff;
 }
 
+.confirm-actions .danger-button:hover {
+  background: #8c1d18;
+  color: #fff;
+}
+
 .editor-title,
 .editor-body {
   width: 100%;

@@ -5,12 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="theme-color" content="#f9c74f">
     <title>Notes</title>
-    <link rel="stylesheet" href="./styles.css?v=20260523-empty-trash">
+    <link rel="stylesheet" href="./styles.css?v=20260524-utf8-fix">
   </head>
   <body>
     <div class="app-shell" id="appShell">
       <header class="topbar">
-        <button class="icon-button menu-toggle" id="menuToggle" aria-label="PokaĹĽ menu">
+        <button class="icon-button menu-toggle" id="menuToggle" aria-label="Pokaż menu">
           <span class="ui-icon">
             <svg viewBox="0 0 24 24" aria-hidden="true">
               <path d="M4 7h16M4 12h16M4 17h16"></path>
@@ -31,7 +31,7 @@
           <input id="searchInput" type="search" placeholder="Szukaj" autocomplete="off">
         </label>
         <div class="top-actions">
-          <button class="icon-button" id="themeToggle" aria-label="PrzeĹ‚Ä…cz tryb jasny lub ciemny">
+          <button class="icon-button" id="themeToggle" aria-label="Przełącz tryb jasny lub ciemny">
             <span class="ui-icon">
               <svg viewBox="0 0 24 24" aria-hidden="true">
                 <path d="M12 3a9 9 0 1 0 9 9A7 7 0 1 1 12 3Z"></path>
@@ -56,8 +56,8 @@
           <button id="themeMenuButton">Jasny / ciemny</button>
           <p id="googleStatus">Google: brak konfiguracji</p>
           <p id="driveSyncStatus">Sync: gotowy lokalnie</p>
-          <button id="googleConnectButton">PoĹ‚Ä…cz Google</button>
-          <button class="hidden" id="googleDisconnectButton">OdĹ‚Ä…cz Google</button>
+          <button id="googleConnectButton">Połącz Google</button>
+          <button class="hidden" id="googleDisconnectButton">Odłącz Google</button>
           <button id="syncNowButton">Synchronizuj teraz</button>
         </div>
       </header>
@@ -99,11 +99,11 @@
       </aside>
 
       <main class="content">
-        <section class="quick-note" id="quickNote" aria-label="UtwĂłrz notatkÄ™">
-          <input id="quickTitle" class="quick-title" type="text" placeholder="TytuĹ‚">
-          <textarea id="quickBody" rows="1" placeholder="UtwĂłrz notatkÄ™..."></textarea>
+        <section class="quick-note" id="quickNote" aria-label="Utwórz notatkę">
+          <input id="quickTitle" class="quick-title" type="text" placeholder="Tytuł">
+          <textarea id="quickBody" rows="1" placeholder="Utwórz notatkę..."></textarea>
           <div class="quick-actions">
-            <button class="icon-action" id="quickLabelToggle" type="button" aria-label="Wybierz etykietÄ™" title="Etykieta">
+            <button class="icon-action" id="quickLabelToggle" type="button" aria-label="Wybierz etykietę" title="Etykieta">
               <span class="ui-icon">
                 <svg viewBox="0 0 24 24" aria-hidden="true">
                   <path d="M4 10.5V5a1 1 0 0 1 1-1h5.5L20 13.5 13.5 20 4 10.5Z"></path>
@@ -137,8 +137,8 @@
         <section class="trash-toolbar hidden" id="trashToolbar" aria-label="Akcje kosza">
           <button class="danger-button" id="emptyTrashButton" type="button">Usuń wszystkie</button>
         </section>
-        <section class="section-heading" id="pinnedHeading" hidden>PrzypiÄ™te</section>
-        <section class="notes-grid" id="pinnedGrid" aria-label="PrzypiÄ™te notatki"></section>
+        <section class="section-heading" id="pinnedHeading" hidden>Przypięte</section>
+        <section class="notes-grid" id="pinnedGrid" aria-label="Przypięte notatki"></section>
         <section class="section-heading" id="othersHeading" hidden>Inne</section>
         <section class="notes-grid" id="notesGrid" aria-label="Notatki"></section>
         <section class="empty-state hidden" id="emptyState">Brak notatek w tym widoku.</section>
@@ -147,23 +147,23 @@
 
     <div class="modal-backdrop hidden" id="editorBackdrop">
       <article class="editor-modal" id="editorModal" role="dialog" aria-modal="true" aria-label="Edytor notatki">
-        <input id="editorTitle" class="editor-title" type="text" placeholder="TytuĹ‚">
-        <textarea id="editorBody" class="editor-body" placeholder="TreĹ›Ä‡ notatki"></textarea>
+        <input id="editorTitle" class="editor-title" type="text" placeholder="Tytuł">
+        <textarea id="editorBody" class="editor-body" placeholder="Treść notatki"></textarea>
         <div class="editor-meta">
-          <span id="charCount">0 znakĂłw</span>
+          <span id="charCount">0 znaków</span>
           <span id="dateInfo"></span>
         </div>
         <div class="editor-labels" id="editorLabels"></div>
         <div class="editor-actions">
           <div class="editor-color-controls">
           <select id="editorColor" class="visually-hidden-control" aria-label="Kolor notatki">
-            <option value="default">DomyĹ›lny</option>
-            <option value="rose">RĂłĹĽ</option>
+            <option value="default">Domyślny</option>
+            <option value="rose">Róż</option>
             <option value="peach">Brzoskwinia</option>
             <option value="amber">Bursztyn</option>
             <option value="sand">Piasek</option>
-            <option value="mint">MiÄ™ta</option>
-            <option value="green">ZieleĹ„</option>
+            <option value="mint">Mięta</option>
+            <option value="green">Zieleń</option>
             <option value="lime">Limonka</option>
             <option value="teal">Teal</option>
             <option value="cyan">Cyjan</option>
@@ -171,16 +171,16 @@
             <option value="indigo">Indygo</option>
             <option value="violet">Fiolet</option>
             <option value="coral">Koral</option>
-            <option value="custom">WĹ‚asny</option>
+            <option value="custom">Własny</option>
           </select>
           <div id="editorColorPalette" class="editor-color-palette" aria-label="Kolor notatki"></div>
-          <input id="editorCustomColor" class="custom-color-input" type="color" value="#fecdd3" aria-label="WĹ‚asny kolor notatki">
+          <input id="editorCustomColor" class="custom-color-input" type="color" value="#fecdd3" aria-label="Własny kolor notatki">
           </div>
           <div class="editor-action-buttons">
           <button id="editorCopy">Kopiuj</button>
           <button id="editorPin">Przypnij</button>
           <button id="editorArchive">Archiwizuj</button>
-          <button id="editorDelete">UsuĹ„</button>
+          <button id="editorDelete">Usuń</button>
           <button class="primary" id="editorClose">Zamknij</button>
           </div>
         </div>
@@ -199,7 +199,7 @@
     </div>
 
     <div class="toast hidden" id="toast"></div>
-    <script type="module" src="./src/app.js?v=20260523-empty-trash"></script>
+    <script type="module" src="./src/app.js?v=20260524-utf8-fix"></script>
   </body>
 </html>
 
