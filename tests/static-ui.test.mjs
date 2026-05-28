@@ -61,4 +61,13 @@ describe("static UI files", () => {
 
     assert.match(css, /\.confirm-actions\s+\.danger-button:hover\s*\{[^}]*background:\s*#8c1d18;[^}]*color:\s*#fff;/s);
   });
+
+  it("uses viewport height for the editor modal and lets the textarea fill the space", () => {
+    const css = readFileSync("styles.css", "utf8");
+
+    assert.match(css, /\.editor-modal\s*\{[^}]*height:\s*min\(86dvh,\s*calc\(100dvh - 32px\)\);/s);
+    assert.match(css, /\.editor-modal\s*\{[^}]*grid-template-rows:\s*auto minmax\(0,\s*1fr\) auto auto auto;/s);
+    assert.match(css, /\.editor-body\s*\{[^}]*min-height:\s*0;[^}]*overflow-y:\s*auto;/s);
+    assert.match(css, /@media\s*\(max-width:\s*620px\)[\s\S]*\.editor-modal\s*\{[^}]*height:\s*calc\(100dvh - 16px\);/s);
+  });
 });

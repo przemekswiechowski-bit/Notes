@@ -790,16 +790,19 @@ button {
   inset: 0;
   z-index: 50;
   display: grid;
-  place-items: start center;
-  padding: 72px 16px 24px;
+  place-items: center;
+  padding: 24px 16px;
   background: rgba(32, 33, 36, 0.45);
 }
 
 .editor-modal {
   width: min(720px, 100%);
-  max-height: calc(100vh - 96px);
+  height: min(86vh, calc(100vh - 32px));
+  height: min(86dvh, calc(100dvh - 32px));
+  max-height: calc(100vh - 32px);
+  max-height: calc(100dvh - 32px);
   display: grid;
-  grid-template-rows: auto minmax(240px, 1fr) auto auto auto;
+  grid-template-rows: auto minmax(0, 1fr) auto auto auto;
   border-radius: var(--radius);
   background: var(--editor-bg-light, var(--surface));
   box-shadow: 0 12px 36px rgba(0, 0, 0, 0.32);
@@ -875,8 +878,9 @@ button {
 }
 
 .editor-body {
-  min-height: 300px;
+  min-height: 0;
   padding: 12px 22px;
+  overflow-y: auto;
   resize: none;
   scrollbar-width: thin;
   scrollbar-color: color-mix(in srgb, var(--muted) 44%, transparent) transparent;
@@ -1281,14 +1285,22 @@ button {
   }
 
   .modal-backdrop {
-    padding: 64px 0 0;
-    place-items: stretch;
+    padding: 8px;
+    place-items: center stretch;
   }
 
   .editor-modal {
-    min-height: calc(100vh - 64px);
-    max-height: calc(100vh - 64px);
-    border-radius: 12px 12px 0 0;
+    width: 100%;
+    height: calc(100vh - 16px);
+    height: calc(100dvh - 16px);
+    min-height: 0;
+    max-height: calc(100vh - 16px);
+    max-height: calc(100dvh - 16px);
+    border-radius: 12px;
+  }
+
+  .editor-body {
+    min-height: 0;
   }
 
   .editor-color-palette {
