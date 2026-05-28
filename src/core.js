@@ -33,7 +33,7 @@ export const COLOR_LABELS = {
 };
 export const COLOR_VALUES = {
   default: null,
-  rose: "#fecdd3",
+  rose: "#f9c2cf",
   peach: "#fed7aa",
   amber: "#fde68a",
   sand: "#f6edcf",
@@ -45,11 +45,11 @@ export const COLOR_VALUES = {
   blue: "#dbeafe",
   indigo: "#ddd6fe",
   violet: "#f3d8ff",
-  coral: "#fecaca",
+  coral: "#fec4b3",
 };
 export const DARK_COLOR_VALUES = {
   default: null,
-  rose: "#542330",
+  rose: "#5b2538",
   peach: "#4a2d24",
   amber: "#4b3a18",
   sand: "#453c25",
@@ -61,7 +61,7 @@ export const DARK_COLOR_VALUES = {
   blue: "#22364f",
   indigo: "#312b54",
   violet: "#43264f",
-  coral: "#5a2727",
+  coral: "#5f2f24",
 };
 
 const HEX_COLOR_PATTERN = /^#[0-9a-f]{6}$/i;

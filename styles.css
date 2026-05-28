@@ -1012,7 +1012,7 @@ button {
 }
 
 .note-default { --note-bg: var(--surface); }
-.note-rose { --note-bg-light: #fecdd3; --note-bg-dark: #542330; }
+.note-rose { --note-bg-light: #f9c2cf; --note-bg-dark: #5b2538; }
 .note-peach { --note-bg-light: #fed7aa; --note-bg-dark: #4a2d24; }
 .note-amber { --note-bg-light: #fde68a; --note-bg-dark: #4b3a18; }
 .note-sand { --note-bg-light: #f6edcf; --note-bg-dark: #453c25; }
@@ -1024,7 +1024,7 @@ button {
 .note-blue { --note-bg-light: #dbeafe; --note-bg-dark: #22364f; }
 .note-indigo { --note-bg-light: #ddd6fe; --note-bg-dark: #312b54; }
 .note-violet { --note-bg-light: #f3d8ff; --note-bg-dark: #43264f; }
-.note-coral { --note-bg-light: #fecaca; --note-bg-dark: #5a2727; }
+.note-coral { --note-bg-light: #fec4b3; --note-bg-dark: #5f2f24; }
 [data-theme="dark"] .note-card,
 [data-theme="dark"] .color-dot {
   background: var(--note-bg-dark, var(--note-bg-light, var(--note-bg, var(--surface)))) !important;

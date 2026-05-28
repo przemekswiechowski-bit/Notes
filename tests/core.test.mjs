@@ -185,16 +185,17 @@ describe("core note behavior", () => {
   it("accepts predefined and custom hex note colors", () => {
     assert.equal(COLORS.length, 14);
     assert.equal(createNote({ color: "teal" }).color, "teal");
-    assert.equal(resolveNoteColor("rose").value, "#fecdd3");
+    assert.equal(resolveNoteColor("rose").value, "#f9c2cf");
     assert.equal(resolveNoteColor("teal").value, "#99f6e4");
     assert.equal(resolveNoteColor("lime").value, "#d9f99d");
-    assert.equal(resolveNoteColor("coral").value, "#fecaca");
+    assert.equal(resolveNoteColor("coral").value, "#fec4b3");
     assert.equal(resolveNoteColor("#123abc").value, "#123abc");
     assert.equal(resolveNoteColor("nope").key, "default");
   });
 
   it("uses the same theme color for swatches and cards", () => {
-    assert.equal(resolveThemeColor("rose", "dark"), "#542330");
+    assert.equal(resolveThemeColor("rose", "dark"), "#5b2538");
+    assert.equal(resolveThemeColor("coral", "dark"), "#5f2f24");
     assert.equal(resolveThemeColor("rose", "dark"), resolveThemeColor("rose", "dark"));
     assert.equal(resolveThemeColor("#123abc", "dark"), "#123abc");
   });
